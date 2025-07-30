@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Kubernetes Cluster Setup on AWS</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/solarized.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		
+		<style>
+			:root {
+				--page-number-color: #586e75;
+				--background-color: #002b36;
+				--main-text-color: #93a1a1;
+				--heading-color: #b58900;
+				--code-background: #073642;
+			}
+			
+			.reveal {
+				background-color: var(--background-color);
+				color: var(--main-text-color);
+			}
+			
+			.reveal .slides {
+				text-align: left;
+			}
+			
+			.reveal h1,
+			.reveal h2,
+			.reveal h3,
+			.reveal h4,
+			.reveal h5 {
+				color: var(--heading-color);
+				text-transform: none;
+			}
+			
+			.reveal .slides section .fragment.highlight-current-blue.current-fragment {
+				color: #268bd2;
+			}
+			.reveal .slides section .fragment.highlight-current-green.current-fragment {
+				color: #859900;
+			}
+			.reveal .slides section .fragment.highlight-current-red.current-fragment {
+				color: #dc322f;
+			}
+			.reveal .slides section .fragment.highlight-current-yellow.current-fragment {
+				color: #b58900;
+			}
+			.code-block {
+				background: var(--code-background);
+				padding: 15px;
+				border-radius: 6px;
+				margin: 20px 0;
+				font-size: 1.1em;
+				line-height: 1.4;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+			}
+			.architecture-diagram {
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				margin: 20px 0;
+			}
+			.node {
+				background: #268bd2;
+				color: white;
+				padding: 15px;
+				border-radius: 8px;
+				text-align: center;
+				min-width: 120px;
+			}
+			.worker-node {
+				background: #859900;
+			}
+			.master-node {
+				background: #d33682;
+			}
+			.arrow {
+				font-size: 2em;
+				color: #b58900;
+			}
+			.step-number {
+				background: #268bd2;
+				color: white;
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				margin-right: 10px;
+				font-weight: bold;
+			}
+			
+			/* Page numbers */
+			.reveal .slide-number {
+				font-size: 20px;
+				color: var(--page-number-color);
+				background-color: transparent;
+				right: 24px;
+				bottom: 24px;
+			}
+			
+			/* Larger code */
+			.reveal code {
+				font-family: 'Fira Code', monospace;
+				font-size: 1.2em;
+				line-height: 1.4;
+			}
+			
+			.reveal pre {
+				width: 100%;
+				margin: 20px auto;
+				box-shadow: none;
+			}
+			
+			.reveal pre code {
+				max-height: 600px;
+				padding: 15px;
+				line-height: 1.4;
+			}
+			
+			.team-names {
+				display: flex;
+				justify-content: space-around;
+				margin: 20px 0;
+				flex-wrap: wrap;
+			}
+			.team-member {
+				background: #268bd2;
+				color: white;
+				padding: 10px 20px;
+				border-radius: 25px;
+				margin: 5px;
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- Title Slide -->
+				<section>
+					<h1>Kubernetes Cluster Setup</h1>
+					<h3>on AWS with Terraform</h3>
+					<p>
+						<small>Automated Cloud Kubernetes Cluster Deployment</small>
+					</p>
+					<div class="team-names">
+						<div class="team-member">Joy</div>
+						<div class="team-member">Ju-nine</div>
+						<div class="team-member">Usher</div>
+						<div class="team-member">Emmanuel</div>
+					</div>
+					<p>
+						<small>Date: <span id="current-date"></span></small>
+					</p>
+				</section>
+
+				<!-- Agenda -->
+				<section>
+					<h2>Agenda</h2>
+					<ol>
+						<li class="fragment fade-in">Introduction to Kubernetes</li>
+						<li class="fragment fade-in">Why Cloud Clusters?</li>
+						<li class="fragment fade-in">AWS & Terraform Overview</li>
+						<li class="fragment fade-in">Project Architecture</li>
+						<li class="fragment fade-in">Setup Process</li>
+						<li class="fragment fade-in">Demo & Verification</li>
+						<li class="fragment fade-in">Security & Best Practices</li>
+						<li class="fragment fade-in">Q&A</li>
+					</ol>
+				</section>
+
+				<!-- What is Kubernetes -->
+				<section>
+					<section>
+						<h2>What is Kubernetes?</h2>
+						<div class="fragment fade-in">
+							<p><strong>Kubernetes (K8s)</strong> is an open-source container orchestration platform</p>
+						</div>
+						<div class="fragment fade-in">
+							<p>It automates the deployment, scaling, and management of containerized applications</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Key Features</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Container Orchestration:</strong> Manages thousands of containers</li>
+								<li><strong>Auto-scaling:</strong> Scales applications based on demand</li>
+								<li><strong>Self-healing:</strong> Automatically replaces failed containers</li>
+								<li><strong>Load Balancing:</strong> Distributes traffic across containers</li>
+								<li><strong>Rolling Updates:</strong> Zero-downtime deployments</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Why Cloud Clusters -->
+				<section>
+					<section>
+						<h2>Why Cloud Kubernetes Clusters?</h2>
+						<div class="fragment fade-in">
+							<p>Production-ready, scalable infrastructure</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Benefits</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Scalability:</strong> Auto-scaling based on demand</li>
+								<li><strong>Reliability:</strong> High availability and fault tolerance</li>
+								<li><strong>Security:</strong> Enterprise-grade security features</li>
+								<li><strong>Cost-effective:</strong> Pay only for what you use</li>
+								<li><strong>Global reach:</strong> Deploy across multiple regions</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- AWS & Terraform Overview -->
+				<section>
+					<section>
+						<h2>AWS & Terraform Overview</h2>
+						<div class="fragment fade-in">
+							<p><strong>AWS</strong> provides the cloud infrastructure</p>
+						</div>
+						<div class="fragment fade-in">
+							<p><strong>Terraform</strong> automates the infrastructure deployment</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>AWS Features</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>EC2:</strong> Virtual machines for Kubernetes nodes</li>
+								<li><strong>VPC:</strong> Isolated network environment</li>
+								<li><strong>Security Groups:</strong> Network access control</li>
+								<li><strong>Auto Scaling:</strong> Dynamic resource management</li>
+								<li><strong>Load Balancers:</strong> Traffic distribution</li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Terraform Benefits</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Infrastructure as Code:</strong> Version-controlled infrastructure</li>
+								<li><strong>Automation:</strong> Repeatable deployments</li>
+								<li><strong>State Management:</strong> Track infrastructure changes</li>
+								<li><strong>Multi-cloud:</strong> Support for various cloud providers</li>
+								<li><strong>Collaboration:</strong> Team-based infrastructure management</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Project Architecture -->
+				<section>
+					<section>
+						<h2>Project Architecture</h2>
+						<div class="fragment fade-in">
+							<p>Our setup creates a 3-node Kubernetes cluster on AWS</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Cluster Topology</h3>
+						<div class="architecture-diagram">
+							<div class="node master-node">
+								<h4>Master Node</h4>
+								<p>EC2 Instance</p>
+								<p>Control Plane</p>
+								<p>Kubernetes v1.28.15</p>
+							</div>
+							<div class="arrow">→</div>
+							<div class="node worker-node">
+								<h4>Worker Node 1</h4>
+								<p>EC2 Instance</p>
+								<p>Application Pods</p>
+								<p>Auto-scaling</p>
+							</div>
+							<div class="arrow">→</div>
+							<div class="node worker-node">
+								<h4>Worker Node 2</h4>
+								<p>EC2 Instance</p>
+								<p>Application Pods</p>
+								<p>Load balancing</p>
+							</div>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Project Structure</h3>
+						<div class="code-block">
+							<pre><code class="bash">k8s-terraform-aws-cluster/
+├── terraform/
+│   ├── main.tf              # Main Terraform configuration
+│   ├── variables.tf         # Variable definitions
+│   └── terraform.tfvars     # Variable values
+├── scripts/
+│   ├── setup_master.sh      # Master node setup
+│   └── setup_worker.sh      # Worker node setup
+├── index.html              # This presentation
+└── README.md               # Documentation</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<!-- Setup Process -->
+				<section>
+					<section>
+						<h2>Setup Process</h2>
+						<div class="fragment fade-in">
+							<p>Automated infrastructure deployment</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Step 1: Infrastructure Provisioning</h3>
+						<div class="fragment fade-in">
+							<div class="code-block">
+								<pre><code class="bash"># Deploy AWS infrastructure
+terraform init
+terraform plan
+terraform apply</code></pre>
+							</div>
+							<ul>
+								<li>EC2 instances for master and workers</li>
+								<li>Security groups and networking</li>
+								<li>SSH key pairs and access</li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Step 2: Master Node Setup</h3>
+						<div class="fragment fade-in">
+							<div class="code-block">
+								<pre><code class="bash"># Master node configuration
+- Install Docker and Kubernetes
+- Initialize kubeadm control plane
+- Configure kubectl
+- Deploy Flannel CNI
+- Generate join commands</code></pre>
+							</div>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Step 3: Worker Node Setup</h3>
+						<div class="fragment fade-in">
+							<div class="code-block">
+								<pre><code class="bash"># Worker node configuration
+- Install Docker and Kubernetes
+- Join cluster using kubeadm
+- Configure networking
+- Verify node status</code></pre>
+							</div>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Step 4: Security Configuration</h3>
+						<div class="fragment fade-in">
+							<div class="code-block">
+								<pre><code class="bash"># Security group rules
+- Port 6443 (Kubernetes API)
+- Port 10250 (Kubelet)
+- ICMP (Ping)
+- Internal cluster communication</code></pre>
+							</div>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Step 5: Verification</h3>
+						<div class="fragment fade-in">
+							<div class="code-block">
+								<pre><code class="bash"># Verify cluster status
+kubectl get nodes
+kubectl get pods --all-namespaces
+kubectl cluster-info</code></pre>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- Demo & Verification -->
+				<section>
+					<section>
+						<h2>Demo & Verification</h2>
+						<div class="fragment fade-in">
+							<p>Let's see the cluster in action!</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Cluster Status</h3>
+						<div class="code-block">
+							<pre><code class="bash">$ kubectl get nodes
+NAME              STATUS   ROLES           AGE   VERSION
+ip-21-32-12-44    Ready    control-plane   13m   v1.28.15
+ip-21-32-13-188   Ready    &lt;none&gt;          47s   v1.28.15
+ip-21-32-15-122   Ready    &lt;none&gt;          61s   v1.28.15</code></pre>
+						</div>
+					</section>
+					
+					<section>
+						<h3>System Pods</h3>
+						<div class="code-block">
+							<pre><code class="bash">$ kubectl get pods --all-namespaces
+NAMESPACE     NAME                                    READY   STATUS
+kube-system   coredns-5dd5756b68-dvkbz               1/1     Running
+kube-system   coredns-5dd5756b68-nv2f6               1/1     Running
+kube-system   etcd-ip-21-32-12-44                    1/1     Running
+kube-system   kube-apiserver-ip-21-32-12-44          1/1     Running
+kube-system   kube-controller-manager-ip-21-32-12-44 1/1     Running
+kube-system   kube-flannel-ds-glc7n                  1/1     Running
+kube-system   kube-flannel-ds-l7bsp                  1/1     Running
+kube-system   kube-flannel-ds-qmb25                  1/1     Running
+kube-system   kube-flannel-ds-qmb25                  1/1     Running
+kube-system   kube-proxy-fj57q                       1/1     Running
+kube-system   kube-proxy-vrh4l                       1/1     Running
+kube-system   kube-proxy-wcw46                       1/1     Running
+kube-system   kube-scheduler-ip-21-32-12-44          1/1     Running</code></pre>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Sample Deployment</h3>
+						<div class="code-block">
+							<pre><code class="bash"># Deploy a sample nginx application
+$ kubectl run nginx --image=nginx --port=80
+
+# Check the deployment
+$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-6d4cf56db6-abc12   1/1     Running   0          30s
+
+# Expose the service
+$ kubectl expose pod nginx --port=80 --type=NodePort</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<!-- Security & Best Practices -->
+				<section>
+					<section>
+						<h2>Security & Best Practices</h2>
+						<div class="fragment fade-in">
+							<p>Production-ready security measures</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Security Features</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Security Groups:</strong> Network access control</li>
+								<li><strong>SSH Key Authentication:</strong> Secure access</li>
+								<li><strong>Private Subnets:</strong> Isolated networking</li>
+								<li><strong>IAM Roles:</strong> Least privilege access</li>
+								<li><strong>Encryption:</strong> Data at rest and in transit</li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Best Practices</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Resource Limits:</strong> Prevent resource exhaustion</li>
+								<li><strong>Network Policies:</strong> Pod-to-pod communication control</li>
+								<li><strong>RBAC:</strong> Role-based access control</li>
+								<li><strong>Secrets Management:</strong> Secure credential storage</li>
+								<li><strong>Monitoring:</strong> Logging and alerting</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Benefits & Use Cases -->
+				<section>
+					<section>
+						<h2>Benefits & Use Cases</h2>
+						<div class="fragment fade-in">
+							<p>Why this setup is valuable</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Learning & Education</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Real-world Kubernetes experience</strong></li>
+								<li><strong>Cloud infrastructure management</strong></li>
+								<li><strong>Infrastructure as Code practices</strong></li>
+								<li><strong>DevOps and automation skills</strong></li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Production Benefits</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Scalable infrastructure</strong></li>
+								<li><strong>High availability</strong></li>
+								<li><strong>Cost optimization</strong></li>
+								<li><strong>Security compliance</strong></li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Enterprise Benefits</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Automated deployments</strong></li>
+								<li><strong>Consistent environments</strong></li>
+								<li><strong>Version-controlled infrastructure</strong></li>
+								<li><strong>Team collaboration</strong></li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Troubleshooting -->
+				<section>
+					<section>
+						<h2>Troubleshooting</h2>
+						<div class="fragment fade-in">
+							<p>Common issues and solutions</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Common Issues</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Security Group Issues:</strong> Network connectivity problems</li>
+								<li><strong>Kubernetes Init Fails:</strong> Resource constraints</li>
+								<li><strong>Worker Join Fails:</strong> Master node status</li>
+								<li><strong>Permission Errors:</strong> SSH key configuration</li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Debugging Commands</h3>
+						<div class="code-block">
+							<pre><code class="bash"># Check EC2 instances
+aws ec2 describe-instances
+
+# Check security groups
+aws ec2 describe-security-groups
+
+# Check kubelet logs
+ssh ubuntu@master-ip "journalctl -u kubelet -f"
+
+# Check cluster status
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+# Check network connectivity
+ping worker-ip
+telnet master-ip 6443</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<!-- Future Enhancements -->
+				<section>
+					<section>
+						<h2>Future Enhancements</h2>
+						<div class="fragment fade-in">
+							<p>Potential improvements and extensions</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Planned Features</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Auto Scaling Groups:</strong> Dynamic node scaling</li>
+								<li><strong>Load Balancers:</strong> Application load balancing</li>
+								<li><strong>Monitoring Stack:</strong> Prometheus, Grafana</li>
+								<li><strong>CI/CD Integration:</strong> Jenkins, GitLab CI</li>
+								<li><strong>Multi-region:</strong> Global deployment</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Conclusion -->
+				<section>
+					<section>
+						<h2>Conclusion</h2>
+						<div class="fragment fade-in">
+							<p>What we've accomplished</p>
+						</div>
+					</section>
+					
+					<section>
+						<h3>What We Built</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Production-ready Kubernetes cluster</strong></li>
+								<li><strong>Automated AWS infrastructure</strong></li>
+								<li><strong>Secure network configuration</strong></li>
+								<li><strong>Complete documentation</strong></li>
+								<li><strong>Team collaboration</strong></li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>Key Takeaways</h3>
+						<div class="fragment fade-in">
+							<ul>
+								<li><strong>Infrastructure as Code</strong> enables repeatable deployments</li>
+								<li><strong>Cloud-native</strong> provides scalability and reliability</li>
+								<li><strong>Security</strong> is crucial for production environments</li>
+								<li><strong>Automation</strong> reduces errors and saves time</li>
+							</ul>
+						</div>
+					</section>
+				</section>
+
+				<!-- Q&A -->
+				<section>
+					<h2>Questions & Answers</h2>
+					<div class="fragment fade-in">
+						<p>Let's discuss!</p>
+					</div>
+					<div class="fragment fade-in">
+						<p><strong>Resources:</strong></p>
+						<ul>
+							<li>Project Repository: <a href="#">GitHub Link</a></li>
+							<li>Documentation: <a href="#">README.md</a></li>
+							<li>Kubernetes: <a href="https://kubernetes.io">kubernetes.io</a></li>
+							<li>AWS: <a href="https://aws.amazon.com">aws.amazon.com</a></li>
+							<li>Terraform: <a href="https://terraform.io">terraform.io</a></li>
+						</ul>
+					</div>
+				</section>
+
+				<!-- Thank You -->
+				<section>
+					<h1>Thank You!</h1>
+					<h3>Kubernetes Cluster Setup on AWS</h3>
+					<div class="team-names">
+						<div class="team-member">Joy</div>
+						<div class="team-member">Ju-nine</div>
+						<div class="team-member">Usher</div>
+						<div class="team-member">Emmanuel</div>
+					</div>
+					<p>
+						<strong>Questions? Comments? Feedback?</strong>
+					</p>
+					<p>
+						<small>Project: AWS Kubernetes Cluster with Terraform</small><br>
+						<small>Team: Joy, Ju-nine, Usher, Emmanuel</small>
+					</p>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				transition: 'slide',
+				transitionSpeed: 'default',
+				backgroundTransition: 'fade',
+				controls: true,
+				progress: true,
+				center: true,
+				touch: true,
+				loop: false,
+				rtl: false,
+				navigationMode: 'default',
+				shuffle: false,
+				fragments: true,
+				fragmentInURL: false,
+				embedded: false,
+				help: true,
+				showNotes: false,
+				autoPlayMedia: null,
+				preloadIframes: null,
+				autoSlide: 0,
+				autoSlideStoppable: true,
+				autoSlideMethod: Reveal.navigateNext,
+				defaultTiming: null,
+				mouseWheel: false,
+				hideInactiveCursor: true,
+				hideCursorTime: 5000,
+				previewLinks: false,
+				postMessage: true,
+				postMessageEvents: false,
+				focusBodyOnPageVisibilityChange: true,
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+				slideNumber: true,
+				dependencies: [
+					{ src: 'plugin/zoom/zoom.js', async: true },
+					{ src: 'plugin/search/search.js', async: true }
+				]
+			});
+
+			// Set current date
+			document.getElementById('current-date').textContent = new Date().toLocaleDateString();
+		</script>
+	</body>
+</html>  

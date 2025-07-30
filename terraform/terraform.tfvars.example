@@ -1,0 +1,22 @@
+# Example terraform.tfvars file
+# Copy this to terraform.tfvars and update with your actual values
+
+region = "eu-north-1"
+
+instances = {
+  master = {
+    dns = "ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+    ip  = "XX.XX.XX.XX"
+    kp  = "/path/to/your/private-key.pem"
+  }
+  worker-1 = {
+    dns = "ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+    ip  = "XX.XX.XX.XX"
+    kp  = "/path/to/your/private-key.pem"
+  }
+  worker-2 = {
+    dns = "ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+    ip  = "XX.XX.XX.XX"
+    kp  = "/path/to/your/private-key.pem"
+  }
+} 

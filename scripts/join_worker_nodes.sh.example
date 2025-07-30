@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Example join_worker_nodes.sh script
+# Copy this to join_worker_nodes.sh and update with your actual values
+
+KEY_PATH="/path/to/your/private-key.pem"
+MASTER_DNS="ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+WORKER1_DNS="ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+WORKER2_DNS="ec2-XX-XX-XX-XX.eu-north-1.compute.amazonaws.com"
+
+echo "Joining worker nodes to the cluster..."
+
+# Get join command from master
+echo "Getting join command from master..."
+JOIN_CMD=$(ssh -i "$KEY_PATH" ubuntu@$MASTER_DNS "sudo kubeadm token create --print-join-command")
+
+echo "Join command: $JOIN_CMD"
+
+# Join worker1
+echo "Joining worker1 to cluster..."
+ssh -i "$KEY_PATH" ubuntu@$WORKER1_DNS "sudo $JOIN_CMD --ignore-preflight-errors=all"
+
+# Join worker2
+echo "Joining worker2 to cluster..."
+ssh -i "$KEY_PATH" ubuntu@$WORKER2_DNS "sudo $JOIN_CMD --ignore-preflight-errors=all"
+
+echo "Worker nodes joined successfully!" 

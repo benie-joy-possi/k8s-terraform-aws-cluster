@@ -1,0 +1,65 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+
+# Private keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# AWS credentials
+.aws/
+credentials
+config
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node modules (if any)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Backup files
+*.orig
+*.rej 

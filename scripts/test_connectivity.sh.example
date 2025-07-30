@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Example test_connectivity.sh script
+# Copy this to test_connectivity.sh and update with your actual values
+
+KEY_PATH="/path/to/your/private-key.pem"
+MASTER_IP="XX.XX.XX.XX"
+WORKER1_IP="XX.XX.XX.XX"
+WORKER2_IP="XX.XX.XX.XX"
+
+echo "Testing connectivity between nodes..."
+
+# Test ping from worker1 to master
+echo "Testing ping from worker1 to master..."
+ssh -i "$KEY_PATH" ubuntu@$WORKER1_IP "ping -c 3 $MASTER_IP"
+
+# Test ping from worker2 to master
+echo "Testing ping from worker2 to master..."
+ssh -i "$KEY_PATH" ubuntu@$WORKER2_IP "ping -c 3 $MASTER_IP"
+
+echo "Connectivity tests completed." 
